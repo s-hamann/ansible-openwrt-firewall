@@ -1,0 +1,30 @@
+---
+openwrt_firewall_config: {}
+
+openwrt_firewall_zones:
+  - name: lan
+    network: lan
+    input: ACCEPT
+    output: ACCEPT
+    forward: ACCEPT
+
+  - name: wan
+    network:
+      - wan
+      - wan6
+    input: REJECT
+    output: ACCEPT
+    forward: REJECT
+    masq: true
+    mtu_fix: true
+
+openwrt_firewall_forwardings:
+  - src: lan
+    dest: wan
+
+openwrt_firewall_enable_default_rules: true
+openwrt_firewall_rules: []
+openwrt_firewall_redirects: []
+openwrt_firewall_ipsets: []
+openwrt_firewall_drop_in_includes: []
+openwrt_firewall_includes: []

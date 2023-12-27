@@ -1,0 +1,7 @@
+---
+- name: 'Restart firewall'
+  ansible.builtin.service:
+    name: firewall
+    state: restarted
+  when: "not ansible_facts['is_chroot']"
+  listen: _openwrt_restart_firewall

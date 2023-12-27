@@ -1,0 +1,38 @@
+---
+- name: 'Set up drop-in firewall includes'
+  ansible.builtin.copy:
+    dest: "/etc/nftables.d/{{ include['name'] }}.nft"
+    src: "{{ include['src'] | default(omit) }}"
+    content: "{{ include['content'] | default(omit) }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ openwrt_firewall_drop_in_includes }}"
+  loop_control:
+    loop_var: include
+    label: "{{ include['name'] }}"
+
+- name: 'Set up firewall includes'
+  ansible.builtin.copy:
+    dest: "{{ include['path'] }}"
+    content: "{{ include['content'] }}"
+    owner: root
+    group: root
+    mode: "{{ include['type'] | default('script') == 'script' | ansible.builtin.ternary('0755', '0644') }}"
+  loop: "{{ openwrt_firewall_includes | selectattr('content', 'defined') }}"
+  loop_control:
+    loop_var: include
+    label: "{{ include['path'] }}"
+  when: "include['enabled'] | default(true)"
+  notify:
+    - _openwrt_restart_firewall
+
+- name: 'Configure firewall'
+  ansible.builtin.template:
+    dest: '/etc/config/firewall'
+    src: 'firewall.j2'
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - _openwrt_restart_firewall
