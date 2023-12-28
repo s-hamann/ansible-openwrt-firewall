@@ -36,3 +36,55 @@
     mode: '0644'
   notify:
     - _openwrt_restart_firewall
+
+- name: 'Set up banIP'
+  when: "openwrt_firewall_banip_config.keys() | count > 0"
+  block:
+    - name: 'Install banIP'
+      community.general.opkg:
+        name: banip
+        state: present
+
+    - name: 'Install LuCI-intregration for banIP'
+      ansible.builtin.package:
+        name: luci-app-banip
+        state: present
+      when: "openwrt_firewall_banip_luci | bool"
+
+    - name: 'Configure banIP'
+      ansible.builtin.template:
+        dest: '/etc/config/banip'
+        src: 'banip.j2'
+        owner: root
+        group: root
+        mode: '0600'
+      notify:
+        - _openwrt_restart_banip
+
+    # Note: The cron module requires python, for lineinfile we can use an
+    # implementation that does not.
+    - name: 'Schedule regular list updates'
+      ansible.builtin.lineinfile:
+        path: '/etc/crontabs/root'
+        line: "{{ openwrt_firewall_banip_reload_time }} /etc/init.d/banip reload"
+        regexp: '^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+/etc/init.d/banip reload$'
+        create: true
+        owner: root
+        group: root
+        mode: 0600
+        state: "{{ (openwrt_firewall_banip_reload_time != false) | ternary('present', 'absent') }}"
+      when: "openwrt_firewall_banip_config['ban_feed'] | default([]) | count > 0"
+      notify: _openwrt_restart_cron
+
+    - name: 'Schedule regular mail reports'
+      ansible.builtin.lineinfile:
+        path: '/etc/crontabs/root'
+        line: "{{ openwrt_firewall_banip_report_time }} /etc/init.d/banip report mail"
+        regexp: '^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+/etc/init.d/banip report mail$'
+        create: true
+        owner: root
+        group: root
+        mode: 0600
+        state: "{{ (openwrt_firewall_banip_report_time != false) | ternary('present', 'absent') }}"
+      when: "openwrt_firewall_banip_config['ban_mailreceiver'] is defined"
+      notify: _openwrt_restart_cron

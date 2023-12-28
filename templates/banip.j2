@@ -1,0 +1,16 @@
+#jinja2: lstrip_blocks: True
+{{ ansible_managed | ansible.builtin.comment }}
+{% macro uci_block(uci_options) %}
+  {% for key, value in uci_options.items() if value != omit %}
+    {% if value is sequence and value is not string %}
+      {% for item in value %}
+	list {{ key }} '{{ item }}'
+      {% endfor %}
+    {% else %}
+	option {{ key }} '{% if value is boolean %}{{ value | ansible.builtin.ternary('1', '0') }}{% else %}{{ value }}{% endif %}'
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+config banip 'global'
+{{ uci_block(openwrt_firewall_banip_default_config | ansible.builtin.combine(openwrt_firewall_banip_config)) }}

@@ -2,6 +2,7 @@ OpenWrt Firewall
 ================
 
 This role handles firewall (fw4) and routing configuration on [OpenWrt](https://www.openwrt.org/) targets.
+Optionally, it also sets up and configures banIP.
 
 Requirements
 ------------
@@ -60,6 +61,26 @@ Role Variables
   Instead, it is written to the file indicated by the `path` key.
   The included script can therefore be kept in the Ansible configuration.
   If it is stored as a separate file, use the `ansible.builtin.file` lookup.
+* `openwrt_firewall_banip_config`  
+  A dictionary that describes the banIP configuration.
+  Refer to [the documentation](https://github.com/openwrt/packages/blob/master/net/banip/files/README.md) for information about valid options.
+  When not set, banIP is not installed and set up.
+* `openwrt_firewall_banip_luci`  
+  Whether to install the LuCI integration for banIP.
+  Defaults to `false`.
+  Ignored when `openwrt_firewall_banip_config` is not set.
+* `openwrt_firewall_banip_reload_time`  
+  This option allows updating banIP's blocklists regularly.
+  Set it to a time specification as understood by cron to control when to fetch list upates.
+  Defaults to a random time between 00:01 and 00:59 every day.
+  Set this option to `false` to disable the cron job.
+  The cron job is only set up when the `ban_feeds` option is set in `openwrt_firewall_banip_config`.
+* `openwrt_firewall_banip_report_time`  
+  This option allows sending regular banIP report mails.
+  Set it to a time specification as understood by cron to control when to send reports.
+  Defaults to a random time between 00:00 and 00:58 every day (one minute before the reload job's default).
+  Set this option to `false` to disable the cron job.
+  The cron job is only set up when the `ban_mailreceiver` option is set in `openwrt_firewall_banip_config`.
 
 Dependencies
 ------------
@@ -104,6 +125,13 @@ openwrt_firewall_forwardings:
     dest: wan
   - src: lan
     dest: wan
+
+openwrt_firewall_banip_config:
+  ban_feed:
+    - firehol1
+    - firehol2
+  ban_mailreceiver: banip-report@example.com
+openwrt_firewall_banip_report_time: '0 6 * * *'
 ```
 
 License

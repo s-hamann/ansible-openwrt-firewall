@@ -99,3 +99,13 @@ openwrt_firewall_default_rules:
     dest_port: 500
     proto: udp
     target: ACCEPT
+
+openwrt_firewall_banip_default_config:
+  ban_enable: true
+  ban_autodetect: 1
+  ban_logterm:
+    - 'Exit before auth from'
+    - 'luci: failed login'
+    - 'error: maximum authentication attempts exceeded'
+    - 'sshd.*Connection closed by.*\[preauth\]'
+    - 'SecurityEvent=\"InvalidAccountID\".*RemoteAddress='
