@@ -30,8 +30,12 @@ Role Variables
   Defaults to `true`.
 * `openwrt_firewall_rules`  
   A list of firewall rules to configure. List items are dictionaries that describe the rule configuration.
-  All keys are simply passed to the OpenWrt rule configuration.
+  Most keys are simply passed to the OpenWrt rule configuration.
   Refer to [the documentation](https://openwrt.org/docs/guide-user/firewall/firewall_configuration#rules) for information about valid and required options.
+  The keys `src` and `dest` are handled specially to expand on fw4's capabilities in the following way:
+  * A `!` followed ba a `,`-separated list of zone names is interpreted as the complement of these zones.
+    This role generates a list of separate firewall rules for each zone in `openwrt_firewall_zones` *except* for the one(s) referenced in this rule specification.
+  * A list of zone names is expanded into separate rules for each zone in the list.
 * `openwrt_firewall_redirects`  
   A list of firewall redirects to configure. List items are dictionaries that describe the redirect configuration.
   All keys are simply passed to the OpenWrt redirect configuration.
@@ -125,6 +129,23 @@ openwrt_firewall_forwardings:
     dest: wan
   - src: lan
     dest: wan
+
+openwrt_firewall_rules:
+  - name: 'Accept DNS from internal network'
+    src: '!wan'
+    proto:
+      - tcp
+      - udp
+    dest_port: 53
+    target: ACCEPT
+  - name: 'Block outgoing telnet'
+    src:
+      - guest
+      - lan
+    dest: wan
+    proto: tcp
+    dest_port: 23
+    target: DROP
 
 openwrt_firewall_banip_config:
   ban_feed:

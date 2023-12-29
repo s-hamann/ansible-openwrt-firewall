@@ -1,4 +1,42 @@
 ---
+# fw4 only supports single zones as source or destination for firewall rules.
+# The following task enables lists and zone complements by expanding these
+# specifications into multiple rules.
+- name: 'Expand firewall rules'
+  ansible.builtin.set_fact:
+    openwrt_firewall_rules: "{% set _expanded_rules = [] -%}
+      {% for rule in openwrt_firewall_rules -%}
+        {% if key not in rule.keys() -%}
+          {# The rule being expanded does not contain the key being expanded. Keep it as is. -#}
+          {% set _ = _expanded_rules.append(rule) -%}
+        {% else -%}
+          {% if rule[key] is not string and rule is sequence -%}
+            {# The rule's key is a list. Add a copy of the rule for each list element. -#}
+            {% for zone in rule[key] -%}
+              {% set _ = _expanded_rules.append(rule | ansible.builtin.combine({key: zone})) -%}
+            {% endfor -%}
+          {% else -%}
+            {# The rule's key is not a list. -#}
+            {% if rule[key].startswith('!') -%}
+              {# The rule's key is a complement. Add a copy of the rule for
+              each configured zone except the ones referenced in the rule. -#}
+              {% for zone in openwrt_firewall_zones | map(attribute='name') if zone not in rule[key][1:] | ansible.builtin.split(',') -%}
+                {% set _ = _expanded_rules.append(rule | ansible.builtin.combine({key: zone})) -%}
+              {% endfor -%}
+            {% else -%}
+              {# The rule's key simply references a zone. Keep it as is. -#}
+              {% set _ = _expanded_rules.append(rule) -%}
+            {% endif -%}
+          {% endif -%}
+        {% endif -%}
+      {% endfor -%}
+      {{ _expanded_rules }}"
+  loop:
+    - src
+    - dest
+  loop_control:
+    loop_var: key
+
 - name: 'Set up drop-in firewall includes'
   ansible.builtin.copy:
     dest: "/etc/nftables.d/{{ include['name'] }}.nft"
