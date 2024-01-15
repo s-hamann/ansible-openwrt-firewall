@@ -13,7 +13,7 @@
           {% if rule[key] is not string and rule is sequence -%}
             {# The rule's key is a list. Add a copy of the rule for each list element. -#}
             {% for zone in rule[key] -%}
-              {% set _ = _expanded_rules.append(rule | ansible.builtin.combine({key: zone})) -%}
+              {% set _ = _expanded_rules.append(rule | ansible.builtin.combine({key: zone, 'name': rule['name'] | replace('$' ~ key, zone)})) -%}
             {% endfor -%}
           {% else -%}
             {# The rule's key is not a list. -#}
@@ -21,7 +21,7 @@
               {# The rule's key is a complement. Add a copy of the rule for
               each configured zone except the ones referenced in the rule. -#}
               {% for zone in openwrt_firewall_zones | map(attribute='name') if zone not in rule[key][1:] | ansible.builtin.split(',') -%}
-                {% set _ = _expanded_rules.append(rule | ansible.builtin.combine({key: zone})) -%}
+                {% set _ = _expanded_rules.append(rule | ansible.builtin.combine({key: zone, 'name': rule['name'] | replace('$' ~ key, zone)})) -%}
               {% endfor -%}
             {% else -%}
               {# The rule's key simply references a zone. Keep it as is. -#}

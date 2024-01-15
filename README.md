@@ -35,7 +35,8 @@ Role Variables
   The keys `src` and `dest` are handled specially to expand on fw4's capabilities in the following way:
   * A `!` followed ba a `,`-separated list of zone names is interpreted as the complement of these zones.
     This role generates a list of separate firewall rules for each zone in `openwrt_firewall_zones` *except* for the one(s) referenced in this rule specification.
-  * A list of zone names is expanded into separate rules for each zone in the list.
+  * A list of zone names is expanded into separate rules for each zone in the list.  
+  When a rule is expanded in this way, the placeholders `$src` and `$dest` in the rule's name are replaced by the expanded zone name, so that the separate firewall rules can have distinct names.
 * `openwrt_firewall_redirects`  
   A list of firewall redirects to configure. List items are dictionaries that describe the redirect configuration.
   All keys are simply passed to the OpenWrt redirect configuration.
@@ -142,7 +143,7 @@ openwrt_firewall_rules:
       - udp
     dest_port: 53
     target: ACCEPT
-  - name: 'Block outgoing telnet'
+  - name: 'Block outgoing telnet from $src'
     src:
       - guest
       - lan
