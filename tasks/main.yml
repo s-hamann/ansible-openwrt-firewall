@@ -75,6 +75,13 @@
   notify:
     - _openwrt_restart_firewall
 
+- name: 'Install LuCI-translation for firewall'
+  community.general.opkg:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ openwrt_firewall_luci_i18n | map('regex_replace', '(\\S+)', 'luci-i18n-firewall-\\1') }}"
+  when: "openwrt_firewall_banip_luci | bool"
+
 - name: 'Set up banIP'
   when: "openwrt_firewall_banip_config.keys() | count > 0"
   block:
@@ -84,9 +91,10 @@
         state: present
 
     - name: 'Install LuCI-intregration for banIP'
-      ansible.builtin.package:
-        name: luci-app-banip
+      community.general.opkg:
+        name: "{{ item }}"
         state: present
+      loop: "{{ ['luci-app-banip'] + [openwrt_firewall_luci_i18n | map('regex_replace', '(\\S+)', 'luci-i18n-banip-\\1')] | ansible.builtin.flatten }}"
       when: "openwrt_firewall_banip_luci | bool"
 
     - name: 'Configure banIP'

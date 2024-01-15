@@ -65,6 +65,10 @@ Role Variables
   Instead, it is written to the file indicated by the `path` key.
   The included script can therefore be kept in the Ansible configuration.
   If it is stored as a separate file, use the `ansible.builtin.file` lookup.
+* `openwrt_firewall_luci_i18n`  
+  A list of languages to install for the firewall and optionally banIP LuCI app, e.g. `en` or `pt-br`.
+  Refer to the available OpenWrt packages (`luci-i18n-firewall-*`) for a list of valid language codes.
+  Optional.
 * `openwrt_firewall_banip_config`  
   A dictionary that describes the banIP configuration.
   Refer to [the documentation](https://github.com/openwrt/packages/blob/master/net/banip/files/README.md) for information about valid options.
