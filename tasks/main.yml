@@ -90,7 +90,7 @@
         name: banip
         state: present
 
-    - name: 'Install LuCI-intregration for banIP'
+    - name: 'Install LuCI-integration for banIP'
       community.general.opkg:
         name: "{{ item }}"
         state: present
