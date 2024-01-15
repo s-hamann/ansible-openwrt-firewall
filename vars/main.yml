@@ -101,7 +101,7 @@ openwrt_firewall_default_rules:
     target: ACCEPT
 
 openwrt_firewall_banip_default_config:
-  ban_enable: true
+  ban_enabled: true
   ban_autodetect: 1
   ban_logterm:
     - 'Exit before auth from'
