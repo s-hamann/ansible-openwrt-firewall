@@ -33,7 +33,7 @@ Role Variables
   Most keys are simply passed to the OpenWrt rule configuration.
   Refer to [the documentation](https://openwrt.org/docs/guide-user/firewall/firewall_configuration#rules) for information about valid and required options.
   The keys `src` and `dest` are handled specially to expand on fw4's capabilities in the following way:
-  * A `!` followed ba a `,`-separated list of zone names is interpreted as the complement of these zones.
+  * A `!` followed by a `,`-separated list of zone names is interpreted as the complement of these zones.
     This role generates a list of separate firewall rules for each zone in `openwrt_firewall_zones` *except* for the one(s) referenced in this rule specification.
   * A list of zone names is expanded into separate rules for each zone in the list.  
   When a rule is expanded in this way, the placeholders `$src` and `$dest` in the rule's name are replaced by the expanded zone name, so that the separate firewall rules can have distinct names.
