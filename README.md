@@ -7,9 +7,8 @@ Optionally, it also sets up and configures banIP.
 Requirements
 ------------
 
-This role has no special requirements on the controller.
-
-It does, however, require a working [Python](https://www.python.org/) installation on the target system or [gekmihesg's Ansible library for OpenWrt](https://github.com/gekmihesg/ansible-openwrt) on the Ansible controller.
+This role requires the [community.openwrt](https://github.com/ansible-collections/community.openwrt) collection on the Ansible controller.
+As it exclusively uses modules from this collection, Python is *not* required on the target system.
 
 Role Variables
 --------------
@@ -96,8 +95,7 @@ Dependencies
 
 This role does not depend on any specific roles.
 
-However, it was written for fw4 and therefore supports only OpenWrt 22.03 or newer.
-Older versions may or may not work.
+However, it only runs on OpenWrt 25.12 or newer.
 
 Example Configuration
 ---------------------

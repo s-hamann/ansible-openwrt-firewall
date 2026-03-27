@@ -1,20 +1,20 @@
 ---
 - name: 'Restart firewall'
-  ansible.builtin.service:
+  community.openwrt.service:
     name: firewall
     state: restarted
   when: "not ansible_facts['is_chroot']"
   listen: _openwrt_restart_firewall
 
 - name: 'Restart banIP'
-  ansible.builtin.service:
+  community.openwrt.service:
     name: banip
     state: restarted
   when: "not ansible_facts['is_chroot']"
   listen: _openwrt_restart_banip
 
 - name: 'Restart cron'
-  ansible.builtin.service:
+  community.openwrt.service:
     name: cron
     state: restarted
   when: "not ansible_facts['is_chroot']"

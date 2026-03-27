@@ -38,7 +38,7 @@
     loop_var: key
 
 - name: 'Set up drop-in firewall includes'
-  ansible.builtin.copy:
+  community.openwrt.copy:
     dest: "/etc/nftables.d/{{ include['name'] }}.nft"
     src: "{{ include['src'] | default(omit) }}"
     content: "{{ include['content'] | default(omit) }}"
@@ -51,7 +51,7 @@
     label: "{{ include['name'] }}"
 
 - name: 'Set up firewall includes'
-  ansible.builtin.copy:
+  community.openwrt.copy:
     dest: "{{ include['path'] }}"
     content: "{{ include['content'] }}"
     owner: root
@@ -66,7 +66,7 @@
     - _openwrt_restart_firewall
 
 - name: 'Configure firewall'
-  ansible.builtin.template:
+  community.openwrt.template:
     dest: '/etc/config/firewall'
     src: 'firewall.j2'
     owner: root
@@ -76,7 +76,7 @@
     - _openwrt_restart_firewall
 
 - name: 'Install LuCI-translation for firewall'
-  community.general.opkg:
+  community.openwrt.apk:
     name: "{{ item }}"
     state: present
   loop: "{{ openwrt_firewall_luci_i18n | map('ansible.builtin.regex_replace', '(\\S+)', 'luci-i18n-firewall-\\1') }}"
@@ -86,19 +86,19 @@
   when: "openwrt_firewall_banip_config.keys() | count > 0"
   block:
     - name: 'Install banIP'
-      community.general.opkg:
+      community.openwrt.apk:
         name: banip
         state: present
 
     - name: 'Install LuCI-integration for banIP'
-      community.general.opkg:
+      community.openwrt.apk:
         name: "{{ item }}"
         state: present
       loop: "{{ ['luci-app-banip'] + [openwrt_firewall_luci_i18n | map('ansible.builtin.regex_replace', '(\\S+)', 'luci-i18n-banip-\\1')] | ansible.builtin.flatten }}"
       when: "openwrt_firewall_banip_luci | bool"
 
     - name: 'Configure banIP'
-      ansible.builtin.template:
+      community.openwrt.template:
         dest: '/etc/config/banip'
         src: 'banip.j2'
         owner: root
@@ -107,10 +107,10 @@
       notify:
         - _openwrt_restart_banip
 
-    # Note: The cron module requires python, for lineinfile we can use an
-    # implementation that does not.
+    # Note: community.openwrt does not currently have an implementation of the
+    # cron module. Hence, we use lineinfile.
     - name: 'Schedule regular list updates'
-      ansible.builtin.lineinfile:
+      community.openwrt.lineinfile:
         path: '/etc/crontabs/root'
         line: "{{ openwrt_firewall_banip_reload_time }} /etc/init.d/banip reload"
         regexp: '^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+/etc/init.d/banip reload$'
@@ -123,7 +123,7 @@
       notify: _openwrt_restart_cron
 
     - name: 'Schedule regular mail reports'
-      ansible.builtin.lineinfile:
+      community.openwrt.lineinfile:
         path: '/etc/crontabs/root'
         line: "{{ openwrt_firewall_banip_report_time }} /etc/init.d/banip report mail"
         regexp: '^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+/etc/init.d/banip report mail$'
